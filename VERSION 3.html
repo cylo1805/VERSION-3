@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Historia Clínica Estética</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      --color-principal: #D8BFD8;
+      --color-secundario: #E6E6FA;
+      --color-texto: #4a4a4a;
+    }
+    body { font-family: Arial, sans-serif; margin: 0; background-color: var(--color-secundario); }
+    .container { padding: 20px; }
+    h2, h3, h4 { color: var(--color-texto); }
+    .form-section, .photo-section, .consent-section, .historial-section, .servicio-section, .portada, .gestion-servicios {
+      margin-bottom: 30px; padding: 15px; border: 1px solid #ccc; border-radius: 10px; background-color: #fff;
+    }
+    label { display: block; margin-top: 10px; }
+    input, textarea, select { width: 100%; padding: 8px; margin-top: 5px; }
+    .signature-pad { border: 1px solid #ccc; margin-top: 10px; }
+    .btn { margin-top: 10px; padding: 10px 15px; background: var(--color-principal); color: white; border: none; border-radius: 5px; cursor: pointer; }
+    .photo-preview img { max-width: 100px; margin-right: 10px; }
+    .historia-item { border-top: 1px dashed #aaa; margin-top: 10px; padding-top: 10px; }
+    .servicio-item, .servicio-listado { margin-top: 5px; }
+    .print-btn { background-color: #2196F3; margin-left: 10px; }
+    .portada h2, .portada p { text-align: center; }
+    .login-screen { display: flex; align-items: center; justify-content: center; height: 100vh; background-color: var(--color-secundario); }
+    .login-box { background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); width: 90%; max-width: 400px; }
+    .login-box h2 { margin-bottom: 20px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div id="login" class="login-screen">
+    <div class="login-box">
+      <h2>Iniciar Sesión</h2>
+      <label for="usuario">Usuario</label>
+      <input type="text" id="usuario">
+      <label for="clave">Contraseña</label>
+      <input type="password" id="clave">
+      <button class="btn" onclick="iniciarSesion()">Entrar</button>
+    </div>
+  </div>
+
+  <div id="app" class="container" style="display:none;">
+    <div class="form-section">
+      <h3>Historia Clínica</h3>
+      <label for="nombrePaciente">Nombre del Paciente</label>
+      <input type="text" id="nombrePaciente">
+
+      <label for="fechaConsulta">Fecha</label>
+      <input type="date" id="fechaConsulta">
+
+      <label for="diagnostico">Diagnóstico</label>
+      <textarea id="diagnostico"></textarea>
+
+      <label for="tratamiento">Tratamiento</label>
+      <textarea id="tratamiento"></textarea>
+
+      <label for="consentimiento">Consentimiento Informado</label>
+      <textarea id="consentimiento"></textarea>
+
+      <label for="firma">Firma del paciente (escriba su nombre)</label>
+      <input type="text" id="firma">
+
+      <button class="btn" onclick="generarPDF()">Imprimir Historia Actual</button>
+    </div>
+
+    <div class="gestion-servicios">
+      <h3>Servicios Estéticos</h3>
+      <label for="servicio">Servicio</label>
+      <select id="servicio">
+        <option value="hidrolipoclasia">Hidrolipoclasia</option>
+        <option value="sculptra">Sculptra</option>
+        <option value="peptonas">Peptonas en Glúteo</option>
+      </select>
+
+      <label for="consentimientoServicio">Consentimiento para el Servicio</label>
+      <textarea id="consentimientoServicio"></textarea>
+
+      <button class="btn" onclick="agregarServicio()">Agregar Servicio</button>
+    </div>
+
+    <div class="servicio-listado">
+      <h4>Servicios Agregados</h4>
+      <ul id="listaServicios"></ul>
+    </div>
+  </div>
+
+  <script>
+    const credenciales = { usuario: 'admin', clave: '1234' };
+
+    function iniciarSesion() {
+      const usuario = document.getElementById('usuario').value;
+      const clave = document.getElementById('clave').value;
+      if (usuario === credenciales.usuario && clave === credenciales.clave) {
+        document.getElementById('login').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+      } else {
+        alert('Credenciales incorrectas');
+      }
+    }
+
+    function generarPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      const nombre = document.getElementById('nombrePaciente').value;
+      const fecha = document.getElementById('fechaConsulta').value;
+      const diagnostico = document.getElementById('diagnostico').value;
+      const tratamiento = document.getElementById('tratamiento').value;
+      const consentimiento = document.getElementById('consentimiento').value;
+      const firma = document.getElementById('firma').value;
+
+      doc.setFontSize(12);
+      doc.text(`Historia Clínica - Fecha: ${fecha}`, 10, 10);
+      doc.text(`Paciente: ${nombre}`, 10, 20);
+      doc.text(`Diagnóstico:`, 10, 30);
+      doc.text(diagnostico, 10, 40);
+      doc.text(`Tratamiento:`, 10, 60);
+      doc.text(tratamiento, 10, 70);
+      doc.text(`Consentimiento Informado:`, 10, 90);
+      doc.text(consentimiento, 10, 100);
+      doc.text(`Firma del paciente: ${firma}`, 10, 130);
+
+      doc.save(`HistoriaClinica_${nombre}_${fecha}.pdf`);
+    }
+
+    function agregarServicio() {
+      const servicio = document.getElementById('servicio').value;
+      const consentimientoServicio = document.getElementById('consentimientoServicio').value;
+      
+      const servicioItem = document.createElement('li');
+      servicioItem.textContent = `${servicio}: ${consentimientoServicio}`;
+      document.getElementById('listaServicios').appendChild(servicioItem);
+      
+      // Limpiar campos
+      document.getElementById('servicio').value = '';
+      document.getElementById('consentimientoServicio').value = '';
+    }
+  </script>
+</body>
+</html>
